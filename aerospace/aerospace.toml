@@ -6,13 +6,15 @@
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
 after-login-command = []
 
-exec-on-workspace-change = ['/bin/bash', '-c', '/opt/homebrew/opt/borders/bin/borders active_color=0xffd000ff inactive_color=0xff9000cc width=7.0']
-
-
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
-after-startup-command = []
+after-startup-command = ['exec-and-forget sketchybar', 
+'exec-and-forget borders style=round active_color=0xff7700ff inactive_color=0xff414550 hidpi=off width=5.0'] 
+
+exec-on-workspace-change = ['/bin/bash', '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
 
 # Start AeroSpace at login
 start-at-login = false
@@ -38,8 +40,10 @@ default-root-container-orientation = 'auto'
 # Drop it from your config, if you don't like this behavior
 # See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
 # See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
-# Fallback value (if you omit the key): on-focused-monitor-changed = []
+# Fallback value (if you omit the key): 
+
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+on-focus-changed = ['move-mouse window-lazy-center']
 
 # You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
 # Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
@@ -50,6 +54,10 @@ automatically-unhide-macos-hidden-apps = false
 [[on-window-detected]]
 if.app-name-regex-substring = 'discord'
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'whatsapp'
+run = ['move-node-to-workspace 3']
 
 # Possible values: (qwerty|dvorak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
@@ -65,11 +73,11 @@ run = 'layout floating'
 #                 See:
 #                 https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-    inner.horizontal = 20
-    inner.vertical =   20
+    inner.horizontal = 10
+    inner.vertical =   10
     outer.left =       10
     outer.bottom =     15
-    outer.top =        10
+    outer.top =        [{monitor."G271CQP E2" = 40}, 10]
     outer.right =      10
 
 # 'main' binding mode declaration

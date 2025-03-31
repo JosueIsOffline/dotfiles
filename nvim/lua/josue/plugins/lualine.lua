@@ -51,8 +51,6 @@ return {
     lualine.setup({
       options = {
         theme = my_lualine_theme,
-        position = "bottom",
-        globalstatus = true,
       },
       sections = {
         lualine_x = {
