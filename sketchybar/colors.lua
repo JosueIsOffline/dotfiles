@@ -4,7 +4,7 @@ local with_alpha = function(color, alpha)
   if alpha > 1.0 or alpha < 0.0 then
     return color
   end
-  return (color & 0x00ffffff) | (math.floor(alpha * 255.0) << 24)
+  return (color & 0x00ffffff) | (math.floor(alpha * 255.0) < 24)
 end
 
 local transparent = 0x00000000
@@ -56,8 +56,15 @@ M.sections = {
       low = rp_moon.love,
       mid = rp_moon.gold,
       high = rp_moon.pine,
+      green = 0xff40a02b,
     },
-    wifi = { icon = rp_moon.rose },
+    wifi = {
+      icon = rp_moon.rose,
+      red = 0xffeb6f92,
+      blue = 0xff3e8fb0,
+      grey = 0xff6e6a86,
+      white = 0xffe0def4,
+    },
     volume = {
       icon = rp_moon.foam,
       popup = {

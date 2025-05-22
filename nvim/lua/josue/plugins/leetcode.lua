@@ -1,15 +1,14 @@
 return {
-  "kawre/leetcode.nvim",
-  build = ":TSUpdate html",
+  'kawre/leetcode.nvim',
+  --build = ':TSUpdate html', -- if you have `nvim-treesitter` installed
   dependencies = {
-    "nvim-telescope/telescope.nvim",
-    "nvim-lua/plenary.nvim", -- required by telescope
-    "MunifTanjim/nui.nvim",
-
-    -- optional
-    "nvim-treesitter/nvim-treesitter",
-    "nvim-tree/nvim-web-devicons",
+    'nvim-telescope/telescope.nvim',
+    -- "ibhagwan/fzf-lua",
+    'nvim-lua/plenary.nvim',
+    'MunifTanjim/nui.nvim',
   },
-  lazy = "Leetcode.nvim" ~= vim.fn.argv()[1],
-  opts = { arg = "Leetcode.nvim", lang = "typescript" },
+  opts = {
+    -- configuration goes here
+    lang = 'typescript',
+  },
 }

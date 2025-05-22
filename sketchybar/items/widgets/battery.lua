@@ -13,6 +13,7 @@ local battery = sbar.add("item", "widgets.battery", {
   label = { font = { family = settings.font.numbers } },
   update_freq = 180,
   popup = { align = "center" },
+  background = { drawing = false },
 })
 
 local remaining_time = sbar.add("item", {
@@ -27,7 +28,6 @@ local remaining_time = sbar.add("item", {
     width = 100,
     align = "right",
   },
-  background = { drawing = false },
 })
 
 battery:subscribe({ "routine", "power_source_change", "system_woke" }, function()
@@ -53,12 +53,15 @@ battery:subscribe({ "routine", "power_source_change", "system_woke" }, function(
         icon = icons.battery._75
       elseif found and charge > 40 then
         icon = icons.battery._50
+      elseif found and charge > 30 then
+        icon = icons.battery._50
+        color = colors.mid
       elseif found and charge > 20 then
         icon = icons.battery._25
-        color = colors.orange
+        color = colors.mid
       else
         icon = icons.battery._0
-        color = colors.red
+        color = colors.low
       end
     end
 
@@ -67,34 +70,37 @@ battery:subscribe({ "routine", "power_source_change", "system_woke" }, function(
       lead = "0"
     end
 
+    local found2, _, remaining = batt_info:find " (%d+:%d+) remaining"
+    local label2 = found2 and " (" .. remaining .. "h)" or "n.e"
+
     battery:set {
       icon = {
         string = icon,
         color = color,
       },
-      label = { string = lead .. label },
+      label = { string = lead .. label .. label2 },
     }
   end)
 end)
 
-battery:subscribe("mouse.clicked", function(env)
-  local drawing = battery:query().popup.drawing
-  battery:set { popup = { drawing = "toggle" } }
+-- battery:subscribe("mouse.clicked", function(env)
+-- 	local drawing = battery:query().popup.drawing
+-- 	battery:set({ popup = { drawing = "toggle" } })
+--
+-- 	if drawing == "off" then
+-- 		sbar.exec("pmset -g batt", function(batt_info)
+-- 			local found, _, remaining = batt_info:find(" (%d+:%d+) remaining")
+-- 			local label = found and remaining .. "h" or "No estimate"
+-- 			remaining_time:set({ label = label })
+-- 		end)
+-- 	end
+-- end)
 
-  if drawing == "off" then
-    sbar.exec("pmset -g batt", function(batt_info)
-      local found, _, remaining = batt_info:find " (%d+:%d+) remaining"
-      local label = found and remaining .. "h" or "No estimate"
-      remaining_time:set { label = label }
-    end)
-  end
-end)
-
-sbar.add("bracket", "widgets.battery.bracket", { battery.name }, {
-  background = { color = colors.bg1 },
-})
-
-sbar.add("item", "widgets.battery.padding", {
-  position = "right",
-  width = settings.group_paddings,
-})
+-- sbar.add("bracket", "widgets.battery.bracket", { battery.name }, {
+--   background = { color = colors.bg1 },
+-- })
+--
+-- sbar.add("item", "widgets.battery.padding", {
+--   position = "right",
+--   width = settings.group_paddings,
+-- })

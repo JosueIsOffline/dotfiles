@@ -1,7 +1,18 @@
+local colors = require "colors"
 local colors = require("colors").sections.widgets.volume
 local icons = require "icons"
 
 local popup_width = 250
+
+local volume_percent = sbar.add("item", "widgets.volume0", {
+  position = "right",
+  icon = { drawing = false },
+  label = {
+    string = "??%",
+    padding_left = -1,
+  },
+  background = { drawing = false },
+})
 
 local volume_icon = sbar.add("item", "widgets.volume", {
   position = "right",
@@ -14,11 +25,18 @@ local volume_icon = sbar.add("item", "widgets.volume", {
     align = "center",
     y_offset = 2,
   },
-  padding_right = 8,
+  padding_right = -1,
+})
+
+local volume_bracket = sbar.add("bracket", "widgets.volume.bracket", {
+  volume_icon.name,
+  volume_percent.name,
+}, {
+  popup = { align = "center" },
 })
 
 local volume_slider = sbar.add("slider", popup_width, {
-  position = "popup." .. volume_icon.name,
+  position = "popup." .. volume_bracket.name,
   slider = {
     highlight_color = colors.slider.highlight,
     background = {
@@ -37,7 +55,7 @@ local volume_slider = sbar.add("slider", popup_width, {
   click_script = 'osascript -e "set volume output volume $PERCENTAGE"',
 })
 
-volume_icon:subscribe("volume_change", function(env)
+volume_percent:subscribe("volume_change", function(env)
   local icon = icons.volume._0
   local volume = tonumber(env.INFO)
   sbar.exec("SwitchAudioSource -t output -c", function(result)
@@ -51,17 +69,23 @@ volume_icon:subscribe("volume_change", function(env)
       icon = icons.volume._10
     end
 
+    local lead = ""
+    if volume < 10 then
+      lead = "0"
+    end
+
     volume_icon:set { icon = icon }
+    volume_percent:set { label = lead .. volume .. "%" }
     volume_slider:set { slider = { percentage = volume } }
   end)
 end)
 
 local function volume_collapse_details()
-  local drawing = volume_icon:query().popup.drawing == "on"
+  local drawing = volume_bracket:query().popup.drawing == "on"
   if not drawing then
     return
   end
-  volume_icon:set { popup = { drawing = false } }
+  volume_bracket:set { popup = { drawing = false } }
   sbar.remove "/volume.device\\.*/"
 end
 
@@ -72,9 +96,9 @@ local function volume_toggle_details(env)
     return
   end
 
-  local should_draw = volume_icon:query().popup.drawing == "off"
+  local should_draw = volume_bracket:query().popup.drawing == "off"
   if should_draw then
-    volume_icon:set { popup = { drawing = true } }
+    volume_bracket:set { popup = { drawing = true } }
     sbar.exec("SwitchAudioSource -t output -c", function(result)
       current_audio_device = result:sub(1, -2)
       sbar.exec("SwitchAudioSource -a -t output", function(available)
@@ -87,7 +111,7 @@ local function volume_toggle_details(env)
             color = colors.popup.highlight
           end
           sbar.add("item", "volume.device." .. counter, {
-            position = "popup." .. volume_icon.name,
+            position = "popup." .. volume_bracket.name,
             width = popup_width,
             align = "center",
             label = { string = device, color = color },

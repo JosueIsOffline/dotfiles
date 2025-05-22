@@ -7,6 +7,7 @@ local settings = require "settings"
 sbar.exec "killall network_load >/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load en0 network_update 2.0"
 
 local popup_width = 250
+local speed_test_in_progress = false
 
 local wifi_up = sbar.add("item", "widgets.wifi1", {
   position = "right",
@@ -154,7 +155,65 @@ local router = sbar.add("item", {
   },
 })
 
-sbar.add("item", { position = "right", width = settings.group_paddings })
+-- Nueva sección para prueba de velocidad
+local speed_test_button = sbar.add("item", {
+  position = "popup." .. wifi_bracket.name,
+  icon = {
+    align = "left",
+    string = "⚡ Prueba de velocidad",
+    width = popup_width,
+  },
+  background = {
+    height = 2,
+    color = colors.grey,
+    y_offset = -2,
+    padding_top = 5,
+  },
+})
+
+local download_speed = sbar.add("item", {
+  position = "popup." .. wifi_bracket.name,
+  icon = {
+    align = "left",
+    string = "Velocidad bajada:",
+    width = popup_width / 2,
+  },
+  label = {
+    string = "-- Mbps",
+    width = popup_width / 2,
+    align = "right",
+  },
+})
+
+local upload_speed = sbar.add("item", {
+  position = "popup." .. wifi_bracket.name,
+  icon = {
+    align = "left",
+    string = "Velocidad subida:",
+    width = popup_width / 2,
+  },
+  label = {
+    string = "-- Mbps",
+    width = popup_width / 2,
+    align = "right",
+  },
+})
+
+local ping = sbar.add("item", {
+  position = "popup." .. wifi_bracket.name,
+  icon = {
+    align = "left",
+    string = "Ping:",
+    width = popup_width / 2,
+  },
+  label = {
+    string = "-- ms",
+    width = popup_width / 2,
+    align = "right",
+  },
+})
+
+-- sbar.add("item", { position = "right", width = settings.group_paddings })
 
 wifi_up:subscribe("network_update", function(env)
   local up_color = (env.upload == "000 Bps") and colors.grey or colors.red
@@ -215,10 +274,88 @@ local function toggle_details()
   end
 end
 
+-- Función para ejecutar la prueba de velocidad
+local function run_speed_test()
+  if speed_test_in_progress then
+    return
+  end
+
+  speed_test_in_progress = true
+
+  -- Actualizar la interfaz para mostrar que la prueba está en progreso
+  speed_test_button:set {
+    icon = {
+      string = "⏳ Prueba en progreso...",
+      color = colors.blue,
+    },
+  }
+
+  download_speed:set { label = { string = "Midiendo..." } }
+  upload_speed:set { label = { string = "Midiendo..." } }
+  ping:set { label = { string = "Midiendo..." } }
+
+  -- Ejecutar prueba de velocidad con speedtest-cli
+  -- Primero verificamos si está instalado
+  sbar.exec("which speedtest-cli", function(result)
+    if result == "" then
+      -- Mostrar mensaje de error y sugerencia para instalar
+      speed_test_button:set {
+        icon = {
+          string = "❌ speedtest-cli no instalado",
+          color = colors.red,
+        },
+      }
+      download_speed:set { label = { string = "Error" } }
+      upload_speed:set { label = { string = "Error" } }
+      ping:set { label = { string = "Error" } }
+
+      sbar.delay(5, function()
+        speed_test_button:set {
+          icon = {
+            string = "⚡ Prueba de velocidad (instala speedtest-cli)",
+            color = colors.white,
+          },
+        }
+        speed_test_in_progress = false
+      end)
+      return
+    end
+
+    -- Ejecutar la prueba usando speedtest-cli
+    sbar.exec("speedtest-cli --simple", function(result)
+      -- Procesar los resultados
+      local download = string.match(result, "Download: ([%d%.]+)")
+      local upload = string.match(result, "Upload: ([%d%.]+)")
+      local ping_result = string.match(result, "Ping: ([%d%.]+)")
+
+      if download and upload and ping_result then
+        download_speed:set { label = { string = download .. " Mbps" } }
+        upload_speed:set { label = { string = upload .. " Mbps" } }
+        ping:set { label = { string = ping_result .. " ms" } }
+      else
+        download_speed:set { label = { string = "Error" } }
+        upload_speed:set { label = { string = "Error" } }
+        ping:set { label = { string = "Error" } }
+      end
+
+      -- Restaurar el botón
+      speed_test_button:set {
+        icon = {
+          string = "⚡ Prueba de velocidad",
+          color = colors.white,
+        },
+      }
+
+      speed_test_in_progress = false
+    end)
+  end)
+end
+
 wifi_up:subscribe("mouse.clicked", toggle_details)
 wifi_down:subscribe("mouse.clicked", toggle_details)
 wifi:subscribe("mouse.clicked", toggle_details)
 wifi:subscribe("mouse.exited.global", hide_details)
+speed_test_button:subscribe("mouse.clicked", run_speed_test)
 
 local function copy_label_to_clipboard(env)
   local label = sbar.query(env.NAME).label.value
@@ -234,3 +371,6 @@ hostname:subscribe("mouse.clicked", copy_label_to_clipboard)
 ip:subscribe("mouse.clicked", copy_label_to_clipboard)
 mask:subscribe("mouse.clicked", copy_label_to_clipboard)
 router:subscribe("mouse.clicked", copy_label_to_clipboard)
+download_speed:subscribe("mouse.clicked", copy_label_to_clipboard)
+upload_speed:subscribe("mouse.clicked", copy_label_to_clipboard)
+ping:subscribe("mouse.clicked", copy_label_to_clipboard)
