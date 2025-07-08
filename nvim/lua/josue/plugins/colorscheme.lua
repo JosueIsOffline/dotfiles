@@ -28,6 +28,7 @@ return {
           "SignColumn",
           "CursorLineNr",
           "EndOfBuffer",
+          "BufferLineFill",
         },
         exclude = {}, -- table: groups you don't want to clear
       })

@@ -15,9 +15,6 @@ return {
       },
       -- enable indentation
       indent = { enable = true },
-      autotag = {
-        enable = true
-      },
 
       -- ensure these language parsers are installed
       ensure_installed = {
@@ -37,7 +34,7 @@ return {
         "gitignore",
         "query",
         "python",
-        "c_sharp"
+        "c_sharp",
       },
       incremental_selection = {
         enable = true,
@@ -45,9 +42,11 @@ return {
           init_selection = "<C-space>",
           node_incremental = "<C-space>",
           scope_incremental = false,
-          node_decremental = "<bs>"
+          node_decremental = "<bs>",
         },
       },
     })
-  end
+
+    require("nvim-ts-autotag").setup()
+  end,
 }
