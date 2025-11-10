@@ -35,6 +35,7 @@ return {
         "query",
         "python",
         "c_sharp",
+        "astro",
       },
       incremental_selection = {
         enable = true,

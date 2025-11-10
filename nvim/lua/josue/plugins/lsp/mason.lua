@@ -17,6 +17,10 @@ return {
           package_uninstalled = "✗",
         },
       },
+      registries = {
+        "github:Crashdummyy/mason-registry",
+        "github:mason-org/mason-registry",
+      },
     })
     mason_lspconfig.setup({
       -- list of servers for mason to install
